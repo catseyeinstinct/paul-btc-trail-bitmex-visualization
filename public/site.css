@@ -1,0 +1,33 @@
+.title { max-width: 100%; }
+.title-reference { margin-left: 2px; font-size: 12px; font-weight: 400; white-space: nowrap; }
+
+header { display: flex; align-items: flex-end; gap: 8px; }
+header > .header-row { flex: 1 1 auto; min-width: 0; }
+header > .lang-btn { position: static; order: 1; flex: 0 0 auto; align-self: center; }
+.cards .card.card-compact {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 8px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.cards .card.card-compact .value { font-size: 12px; margin: 0; }
+
+.assume-days { display: inline-flex; align-items: center; gap: 4px; }
+.assume-days input {
+  width: 44px;
+  background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; font: inherit;
+}
+
+.pnl-start-presets { display: contents; }
+.pnl-start-presets > button { white-space: pre-line; overflow-wrap: anywhere; }
+
+.pnl-detail-hidden #pnl-detail { left: 0; }
+
+#guess-group-row .tb-order-value { flex-wrap: wrap; row-gap: 6px; }
+.guess-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+#guess-status { flex-basis: 100%; contain: inline-size; white-space: normal; font-size: 11px; line-height: 1.5; }
+#guess-status[hidden] { display: none; }
+#orders-table .badge.guess { background: rgba(163, 113, 247, 0.16); color: #c4a5f9; border: 1px solid rgba(163, 113, 247, 0.5); }

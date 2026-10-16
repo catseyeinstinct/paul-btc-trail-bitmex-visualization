@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" href="data:," />
+<!-- site:title -->
+<title>Paul Wei · BitMEX BTC 交易轨迹</title>
+<!-- /site:title -->
+<link rel="stylesheet" href="vendor/nano.min.css" />
+<link rel="stylesheet" href="styles.css" />
+<script src="vendor/pickr.min.js"></script>
+<script src="color-picker.js"></script>
+<script src="chart-touch.js"></script>
+<script src="order-intent.js"></script>
+<script src="vendor/lightweight-charts.standalone.production.js"></script>
+<!-- site:head -->
+<link rel="stylesheet" href="site.css" />
+<script src="data-transform.js"></script>
+<script src="data-provider.js"></script>
+<!-- /site:head -->
+</head>
+<body>
+<div class="app-main">
+<header>
+  <button id="btn-lang" class="lang-btn" data-i18n="lang.btn" data-i18n-title="t.lang" title="Switch to English">EN</button>
+  <div class="header-row">
+    <div class="title">
+      <!-- site:heading -->
+      <h1><span data-i18n="app.title">Paul Wei · BitMEX BTC 交易轨迹</span> <a class="title-reference" href="https://paul.catseye.today/" target="_blank" rel="noopener noreferrer" data-i18n="hdr.track_link">（Hyperliquid 追踪链接）</a></h1>
+      <!-- /site:heading -->
+    </div>
+    <div id="summary-cards" class="cards">
+      <!-- site:cards -->
+      <div class="card card-compact"><span class="label" data-i18n="card.closure">BitMEX 交易所关闭</span><a class="value" id="card-closure" href="https://www.bitmex.com/blog/bitmex-closure" target="_blank" rel="noopener noreferrer">2026-09-23 04:00 UTC</a></div>
+      <div class="card card-compact"><span class="label" data-i18n="card.update">账户最后记录</span><span class="value" id="card-update">—</span></div>
+      <div class="card card-compact"><span class="label" data-i18n="card.export">账户归档导出</span><a class="value" href="https://github.com/bwjoke/BTC-Trading-Since-2020/releases/tag/data-2026-09-11" target="_blank" rel="noopener noreferrer">2026-09-11 09:57 UTC</a></div>
+      <!-- /site:cards -->
+    </div>
+  </div>
+</header>
+
+<section class="controls">
+  <div class="control-group">
+    <span class="label" data-i18n="ctl.interval">K 线粒度</span>
+    <div class="seg" id="seg-interval" role="tablist" aria-busy="false">
+      <button data-val="1w">1w</button>
+      <button data-val="1d">1d</button>
+      <button data-val="4h" class="active">4h</button>
+      <button data-val="1h">1h</button>
+      <button data-val="15m">15m</button>
+      <button data-val="5m">5m</button>
+      <button data-val="3m">3m</button>
+      <button data-val="1m">1m</button>
+    </div>
+  </div>
+  <div class="control-group">
+    <span class="label" data-i18n="ctl.chart_type">K 线类型</span>
+    <div class="seg chart-type-seg" id="seg-chart-type" role="group" data-i18n-aria-label="ctl.chart_type" aria-label="K 线类型">
+      <button data-val="candles" class="active" data-i18n-title="ct.candles" title="K线图"><svg class="chart-type-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 4v3M8 15v4M16 6v3M16 15v3"/><rect x="6" y="7" width="4" height="8" rx="0.5"/><rect x="14" y="9" width="4" height="6" rx="0.5"/></svg><span class="chart-type-name" data-i18n="ct.candles">K线图</span></button>
+      <button data-val="line" data-i18n-title="ct.line" title="线形图"><svg class="chart-type-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m4 17 5-6 4 3 7-8"/></svg><span class="chart-type-name" data-i18n="ct.line">线形图</span></button>
+    </div>
+  </div>
+  <div class="control-group">
+    <span class="label" data-i18n="ctl.replay">回放</span>
+    <button id="btn-step-back" class="replay-btn" data-i18n-title="t.step_back" title="上一根 K 线（快捷键 ←）">
+      <svg class="replay-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 5v14M19 5 9 12l10 7Z"/></svg>
+    </button>
+    <button id="btn-play" class="replay-btn" data-i18n-title="t.play" title="播放回放（快捷键 空格）" aria-pressed="false">
+      <svg class="replay-icon" data-replay-icon="play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m7 5 11 7-11 7Z"/></svg>
+      <svg class="replay-icon" data-replay-icon="pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden><path d="M9 6v12M15 6v12"/></svg>
+    </button>
+    <button id="btn-step-fwd" class="replay-btn" data-i18n-title="t.step_fwd" title="下一根 K 线（快捷键 →）">
+      <svg class="replay-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 5v14M5 5l10 7-10 7Z"/></svg>
+    </button>
+    <label class="speed"><span data-i18n="ctl.speed">速度 (根/秒)</span>
+      <select id="play-speed" title="每秒播放多少根 K 线，回放中途也能改">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="30">30</option>
+        <option value="60">60</option>
+        <option value="120">120</option>
+        <option value="240">240</option>
+      </select>
+    </label>
+    <label class="chk" data-i18n-title="t.show_future" title="开=看到未来+回放位置十字线；关=真历史回放隐藏未来。回放中途也可切换">
+      <input type="checkbox" id="chk-show-future" checked>
+      <span data-i18n="ctl.show_future">显示未来</span>
+    </label>
+  </div>
+  <div class="control-group">
+    <span class="label" data-i18n="ctl.pin">钉住时间</span>
+    <button id="btn-pin" data-i18n="ctl.pin_toggle" data-i18n-title="t.pin" title="把当前 hover 的时间钉住，鼠标离开不跳走；双击任一张图解除">📌 钉住</button>
+    <button id="btn-pin-latest" disabled data-i18n="ctl.pin_latest" data-i18n-title="t.pin_latest" title="跳到最后一根 K 线并钉住，看当前挂单和仓位；缩放级别保持不变">⇥ 最新</button>
+    <span id="pin-state" class="muted" data-i18n="pin.off">未钉住（跟随鼠标）</span>
+  </div>
+  <div class="control-group">
+    <span class="label" data-i18n="ctl.fills">成交标记</span>
+    <div class="fill-scope" id="seg-fills-filter" role="group" data-i18n-aria-label="fills.scope" aria-label="显示范围">
+      <label class="chk"><input id="chk-fills-taker" type="checkbox" data-fill-role="taker" checked><span data-i18n="fills.taker">主动订单</span></label>
+      <label class="chk"><input id="chk-fills-maker" type="checkbox" data-fill-role="maker" checked><span data-i18n="fills.maker">被动订单</span></label>
+    </div>
+    <label class="control-pair" id="fill-intent-control">
+      <span class="label" id="fill-intent-label" tabindex="0" aria-describedby="fill-intent-help" data-i18n="fills.threshold">主动判定阈值</span>
+      <input id="fill-intent-threshold" type="number" min="0" step="0.01" value="0.2" aria-describedby="fill-intent-help" data-i18n-aria-label="fills.threshold" data-i18n-title="fills.threshold" aria-label="主动判定阈值" title="主动判定阈值">
+      <span>%</span>
+      <span id="fill-intent-help" class="control-tooltip" role="tooltip"></span>
+    </label>
+    <span class="control-pair">
+      <span class="ind-sub" data-i18n="ctl.fill_style">样式</span>
+      <div class="seg" id="seg-fill-style">
+        <button data-val="arrow" data-i18n="fill.arrow" data-i18n-title="t.fill_arrow" title="每根 K 线的成交画成箭头，一个不少；订单少时最清楚">箭头</button>
+        <button data-val="bubble" class="active" data-i18n="fill.bubble" data-i18n-title="t.fill_bubble" title="每个订单画成一个圆，面积与大小成正比；买绿卖红，鼠标放上去看明细">气泡</button>
+      </div>
+    </span>
+    <span class="control-pair">
+      <span class="ind-sub" data-i18n="ctl.fill_text">文字</span>
+      <div class="seg" id="seg-fill-text">
+        <button data-val="on" class="active" data-i18n="fill.text_on" data-i18n-title="t.fill_text_on" title="箭头和气泡旁边写上方向、占账户百分比等文字">显示</button>
+        <button data-val="off" data-i18n="fill.text_off" data-i18n-title="t.fill_text_off" title="只画箭头或气泡，不写文字">隐藏</button>
+      </div>
+    </span>
+  </div>
+  <div class="control-group" id="bubble-options">
+    <span class="label" data-i18n="ctl.bubble">气泡</span>
+    <div class="seg" id="seg-bubble-group">
+      <button data-val="order" class="active" data-i18n="bubble.order" data-i18n-title="t.bubble_order" title="每个订单一个圆，重叠也不合并；一个订单分几笔成交仍是一个圆">重叠不合并</button>
+      <button data-val="cluster" data-i18n="bubble.cluster" data-i18n-title="t.bubble_cluster" title="同方向的圆在屏幕上重叠就合并，合并后不超过最大的圆">重叠合并</button>
+    </div>
+    <span class="control-pair">
+      <span class="ind-sub" data-i18n="ctl.bubble_size">大小</span>
+      <div class="seg" id="seg-bubble-size">
+        <button data-val="pos" class="active" data-i18n="bubble.pos" data-i18n-title="t.bubble_pos" title="面积与成交额占成交当时账户价值的比例成正比">按仓位</button>
+        <button data-val="usd" data-i18n="bubble.usd" data-i18n-title="t.bubble_usd" title="面积与成交金额（美元）成正比">按金额</button>
+      </div>
+    </span>
+  </div>
+  <div class="control-group">
+    <span class="label" data-i18n="ctl.order_mode">挂单显示</span>
+    <div class="seg" id="seg-order-mode">
+      <button data-val="lifecycle" class="active" data-i18n="om.lifecycle" data-i18n-title="t.om_lifecycle" title="每条挂单只在它自己的生命周期（创建 → 成交/撤销）区间内画线">生命周期</button>
+      <button data-val="full" data-i18n="om.full" data-i18n-title="t.om_full" title="把选中时刻仍在挂的订单画成贯穿整个横屏的水平线（红=卖 绿=买，虚线=最终未成交 实线=成交）">铺满横屏</button>
+    </div>
+  </div>
+  <div class="control-group">
+    <span class="label" data-i18n="ctl.show_all">显示范围</span>
+    <div class="seg" id="seg-show-all">
+      <button data-val="on" data-i18n="orders.all_history" data-i18n-title="t.show_on" title="一次性把所有订单按各自完整生命周期画在图上，与选中时刻无关——用来总览该账户的全部挂单分布">全部历史</button>
+      <button data-val="off" class="active" data-i18n="orders.current" data-i18n-title="t.show_off" title="只显示选中时刻仍活跃的挂单（默认）">当前挂单</button>
+    </div>
+  </div>
+  <!-- site:controls -->
+  <div class="control-group assume-group" id="assume-group">
+    <span class="label" data-i18n="ctl.assume" data-i18n-title="t.assume" title="2023 年 10 月起归档不再记录下单时刻。按天数假设这些单在结束前已经挂了这么久，补出来的部分线型不变（成交实线、未成交点线），只是画得更淡；天数设为 0 就不补">假设挂单时长</span>
+    <label class="assume-days" data-i18n-title="t.assume_filled" title="最终成交的单假设挂了多少天（0–50）">
+      <span class="ind-sub" data-i18n="assume.filled">成交单</span>
+      <input id="assume-filled-days" type="number" min="0" max="50" step="1" value="1">
+      <span class="ind-sub" data-i18n="assume.unit">天</span>
+    </label>
+    <label class="assume-days" data-i18n-title="t.assume_unfilled" title="最终没成交、被撤掉的单假设挂了多少天（0–50）">
+      <span class="ind-sub" data-i18n="assume.unfilled">未成交</span>
+      <input id="assume-unfilled-days" type="number" min="0" max="50" step="1" value="2">
+      <span class="ind-sub" data-i18n="assume.unit">天</span>
+    </label>
+  </div>
+  <div class="control-group guess-group" id="guess-group">
+    <span class="label" data-i18n="guess.label" data-i18n-title="guess.help" title="勾选后，2023 年 10 月起没有下单时刻的单改用预先算好的 AI 推断起点，线型和普通挂单一样">AI 修复下单时间</span>
+    <div class="guess-controls">
+      <label class="chk"><input type="checkbox" id="chk-order-guesses"><span data-i18n="guess.on">显示推断</span></label>
+      <span id="guess-status" class="muted" role="status" aria-live="polite" hidden></span>
+    </div>
+  </div>
+  <!-- /site:controls -->
+  <div class="control-group">
+    <span class="label" data-i18n="ctl.indicators">技术指标</span>
+    <select id="ind-type" data-i18n-title="t.ind_type" title="EMA 更贴近近期价格；SMA 是简单均线；布林带默认采用 EMA 中轨和同周期指数加权波动率，添加后可修改中轨、倍数与周期">
+      <option value="ema">EMA</option>
+      <option value="sma">SMA</option>
+      <option value="bb" data-i18n="ind.bb_opt">布林带 (EMA)</option>
+    </select>
+    <input id="ind-period" type="number" min="1" max="1000" value="15" data-i18n-title="t.ind_period" title="周期（多少根 K 线）">
+    <button id="ind-add" disabled data-i18n="ind.add" data-i18n-title="t.ind_add" title="添加一个技术指标，可添加多个">+ 添加</button>
+    <label class="chk liquidation-control" data-i18n-title="t.liquidation" title="所选 K 线、当前图表资产口径的理论归零价；不是交易所实际强平价">
+      <input type="checkbox" id="chk-liquidation" checked>
+      <span data-i18n="ctl.liquidation">清算价</span>
+    </label>
+    <label class="chk cash-flow-control" data-i18n-title="t.cash_flows" title="在主图上用竖向虚线标出每一次入金和出金，写明金额和时间" hidden>
+      <input type="checkbox" id="chk-cash-flows">
+      <span data-i18n="ctl.cash_flows">出入金记录</span>
+    </label>
+  </div>
+  <div class="control-group">
+    <span class="label" data-i18n="ctl.order_colors">挂单颜色</span>
+    <span class="ind-sub" data-i18n="side.buy">买</span>
+    <span class="order-color-control">
+      <button id="order-color-buy-trigger" type="button" class="order-color-trigger ind-color" aria-controls="order-color-buy-panel" aria-expanded="false" data-i18n-title="t.color_buy" data-i18n-aria-label="t.color_buy" title="买单线颜色" aria-label="买单线颜色" style="--swatch:#26a69a"></button>
+      <span id="order-color-buy-panel" class="order-color-panel" hidden>
+        <input id="order-color-buy" type="color" value="#26a69a" class="ind-color" data-i18n-title="t.color_buy" title="买单线颜色">
+        <button id="order-color-buy-reset" type="button" class="order-color-reset" data-i18n="order_color.reset">恢复默认</button>
+      </span>
+    </span>
+    <span class="ind-sub" data-i18n="side.sell">卖</span>
+    <span class="order-color-control">
+      <button id="order-color-sell-trigger" type="button" class="order-color-trigger ind-color" aria-controls="order-color-sell-panel" aria-expanded="false" data-i18n-title="t.color_sell" data-i18n-aria-label="t.color_sell" title="卖单线颜色" aria-label="卖单线颜色" style="--swatch:#ef5350"></button>
+      <span id="order-color-sell-panel" class="order-color-panel" hidden>
+        <input id="order-color-sell" type="color" value="#ef5350" class="ind-color" data-i18n-title="t.color_sell" title="卖单线颜色">
+        <button id="order-color-sell-reset" type="button" class="order-color-reset" data-i18n="order_color.reset">恢复默认</button>
+      </span>
+    </span>
+    <span class="ind-sub" data-i18n="ol.filled">成交挂单不透明度</span><input id="order-filled-alpha" type="range" min="0" max="100" step="5" value="60" class="ind-range" data-i18n-title="t.filled_alpha" title="成交挂单线不透明度">
+    <span class="ind-sub" id="order-filled-alpha-val">60%</span>
+    <span class="ind-sub" data-i18n="ol.unfilled">未成交挂单不透明度</span><input id="order-unfilled-alpha" type="range" min="0" max="100" step="5" value="30" class="ind-range" data-i18n-title="t.unfilled_alpha" title="未成交挂单线不透明度">
+    <span class="ind-sub" id="order-unfilled-alpha-val">30%</span>
+  </div>
+  <div class="control-group">
+    <span class="label" data-i18n="ctl.snapshot">历史状态快照</span>
+    <div class="seg" id="seg-snapshot" data-i18n-title="t.snapshot" title="开=显示右侧信息栏；关=隐藏，让 K 线占满">
+      <button data-val="show" class="active" data-i18n="seg.on">开</button>
+      <button data-val="hide" data-i18n="seg.off">关</button>
+    </div>
+  </div>
+</section>
+
+<main>
+  <div class="charts">
+    <div class="chart-wrap pane-price">
+      <span id="interval-loading" class="interval-loading" role="status" aria-live="polite" aria-atomic="true">
+        <span class="interval-loading-ring" aria-hidden="true"></span>
+        <span class="interval-loading-text" data-i18n="ctl.interval_loading">正在加载 K 线</span>
+      </span>
+      <div class="price-chart-head">
+        <span class="chart-tag chart-symbol" id="chart-symbol"><svg class="chart-symbol-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="8"/><path d="M6.4 4.4h2.5a1.6 1.6 0 0 1 0 3.2H6.4m0 0h2.9a1.7 1.7 0 0 1 0 3.4H6.4V4.4M7.4 3.3v1.1M9 3.3v1.1M7.4 11v1.1M9 11v1.1"/></svg><span id="chart-symbol-text">BTC · 4h</span></span>
+        <span id="price-ohlc" class="price-ohlc">
+          <span data-role="values" class="price-ohlc-values">
+            <span class="price-ohlc-field"><span class="price-ohlc-label">O</span> <span class="price-ohlc-number flat" data-role="open">—</span></span>
+            <span class="price-ohlc-field"><span class="price-ohlc-label">H</span> <span class="price-ohlc-number flat" data-role="high">—</span></span>
+            <span class="price-ohlc-field"><span class="price-ohlc-label">L</span> <span class="price-ohlc-number flat" data-role="low">—</span></span>
+            <span class="price-ohlc-field"><span class="price-ohlc-label">C</span> <span class="price-ohlc-number flat" data-role="close">—</span></span>
+          </span>
+          <span data-role="change">— (—)</span>
+        </span>
+      </div>
+      <div id="chart-legend" class="chart-legend"></div>
+      <button id="btn-chart-full" class="chart-full-btn" data-i18n-title="t.fullscreen" title="全屏只看 K 线">⛶</button>
+      <div id="chart-price" class="chart"></div>
+      <div id="bubble-tip" class="bubble-tip" hidden></div>
+    </div>
+    <div class="chart-split" data-split="0" role="separator" aria-orientation="horizontal"
+         data-i18n-title="t.split" title="上下拖动改变两张图的高度"></div>
+    <div class="chart-wrap pane-lev">
+      <span class="chart-tag" data-i18n="chart.lev">实际杠杆率 %（永续合约价值 / 账户价值，有方向）</span>
+      <div id="chart-lev" class="chart"></div>
+    </div>
+    <div class="chart-split" data-split="1" role="separator" aria-orientation="horizontal"
+         data-i18n-title="t.split" title="上下拖动改变两张图的高度"></div>
+    <div class="chart-wrap pane-pnl">
+      <div class="chart-head pnl-detail-hidden pnl-mode-compact pnl-date-compact">
+        <span class="chart-tag" id="pnl-tag"><span id="pnl-title" data-i18n="chart.pnl">累计盈亏</span><span id="pnl-detail"></span></span>
+        <div class="seg seg-chart" id="seg-pnl-unit" role="group" data-i18n-aria-label="pnl.unit" aria-label="盈亏计价单位">
+          <button data-val="usd" class="active" data-i18n-title="t.pnl_usd"
+                  title="美元本位：账户价值 − 累计入金。赚了多少钱">USD</button>
+          <button data-val="btc" data-i18n-title="t.pnl_btc"
+                  title="BTC 本位：账户价值折成 BTC − 每笔入金按当时价折成的 BTC。回答“不如当初直接买币拿着？”">BTC</button>
+        </div>
+        <div class="seg seg-chart" id="seg-pnl-mode" role="group" data-i18n-aria-label="pnl.mode" aria-label="盈亏显示方式">
+          <button id="btn-pnl-amount" type="button" data-val="amount" class="active" aria-pressed="true"
+                  data-i18n-aria-label="t.pnl_amount" aria-label="按当前 USD/BTC 本位显示盈亏数值曲线"
+                  data-i18n-title="t.pnl_amount" title="按当前 USD/BTC 本位显示盈亏数值曲线" data-i18n="pnl.amount">金额</button>
+          <button id="btn-pnl-percent" type="button" data-val="percentage" aria-pressed="false"
+                  data-i18n-aria-label="t.pnl_percent" aria-label="按当前 USD/BTC 本位显示百分比收益率曲线"
+                  data-i18n-title="t.pnl_percent" title="按当前 USD/BTC 本位显示百分比收益率曲线" data-i18n="pnl.percentage">百分比</button>
+          <button id="btn-pnl-percent-toggle" type="button" aria-pressed="false"
+                  data-i18n-aria-label="t.pnl_percent" aria-label="按当前 USD/BTC 本位显示百分比收益率曲线"
+                  data-i18n-title="t.pnl_percent" title="按当前 USD/BTC 本位显示百分比收益率曲线">%</button>
+        </div>
+        <div class="pnl-start" id="pnl-start" role="group" data-i18n-aria-label="pnl.start_short" aria-label="收益起点">
+          <span class="pnl-start-label" data-i18n="pnl.start_short">起点</span>
+          <details id="pnl-start-menu" class="pnl-start-menu">
+            <summary id="pnl-start-trigger"><span class="pnl-start-value"><time id="pnl-start-summary">读取中…</time><span id="pnl-start-short" aria-hidden="true">读取中…</span></span></summary>
+            <div class="pnl-start-menu-content">
+              <div id="pnl-current-start" hidden><span data-i18n="pnl.start_current">当前起点</span> <time id="pnl-current-time"></time></div>
+              <button id="pnl-start-clear" type="button">
+                <time id="pnl-default-time">读取中…</time>
+                <span id="pnl-default-label">（账户起点）</span>
+              </button>
+              <!-- site:pnl-start -->
+              <div id="pnl-start-presets" class="pnl-start-presets"></div>
+              <!-- /site:pnl-start -->
+              <button id="pnl-start-selected" type="button" aria-pressed="false" data-i18n="pnl.start_selected">选中 K 线</button>
+            </div>
+          </details>
+          <div id="pnl-start-status" class="muted small" role="status" aria-live="polite" hidden></div>
+        </div>
+      </div>
+      <div id="chart-pnl" class="chart"></div>
+    </div>
+  </div>
+  <div class="column-split" role="separator" aria-orientation="vertical" tabindex="0"
+       aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+       data-i18n-title="t.split_columns" data-i18n-aria-label="t.split_columns"
+       title="左右拖动改变图表与侧栏的宽度" aria-label="左右拖动改变图表与侧栏的宽度"></div>
+
+  <aside class="side">
+    <div class="panel">
+      <div class="panel-head" data-i18n="panel.state">选中时间的状态</div>
+      <div class="kv">
+        <div><span class="k" data-i18n="kv.time">时间</span><span class="v" id="sel-time">—</span></div>
+        <div><span class="k" data-i18n="kv.px">BTC 价格 (close)</span><span class="v" id="sel-px">—</span></div>
+        <div><span class="k" data-i18n="kv.pos">永续合约仓位</span><span class="v" id="sel-pos">—</span></div>
+        <div><span class="k" data-i18n="kv.notional">永续合约价值</span><span class="v" id="sel-notional">—</span></div>
+        <div data-i18n-title="t.av_btc"><span class="k" data-i18n="kv.av_btc">账户价值（BTC）</span><span class="v" id="sel-av-btc">—</span></div>
+        <div><span class="k" data-i18n="kv.av">账户价值（USD）</span><span class="v" id="sel-av">—</span></div>
+        <!-- site:av-rows -->
+        <!-- /site:av-rows -->
+        <div><span class="k" data-i18n="kv.lev">实际杠杆 (有方向)</span><span class="v" id="sel-lev">—</span></div>
+        <!-- site:lev-rows -->
+        <div><span class="k" data-i18n="kv.lev_spot">其中 BTC 现货</span><span class="v" id="sel-lev-spot">—</span></div>
+        <div><span class="k" data-i18n="kv.lev_xbtusd">其中 BTC 合约</span><span class="v" id="sel-lev-xbtusd">—</span></div>
+        <!-- /site:lev-rows -->
+        <div class="pnl-summary"><span class="k" data-i18n="kv.pnl">累计盈亏（USD）</span><span class="v pnl-summary-values"><span class="v" id="sel-pnl">—</span><span id="sel-pnl-return-group" hidden> (<span class="v" id="sel-pnl-return">—</span>)</span></span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head" data-i18n="panel.orders">活跃订单（收盘仍在挂 + 本 K 线内成交）</div>
+      <table id="orders-table">
+        <thead><tr>
+          <th data-sort="side" data-i18n-label="th.side" data-label="方向" class="left">方向</th>
+          <th data-sort="price" data-i18n-label="th.price" data-label="价格">价格</th>
+          <th data-sort="sz" data-i18n-label="th.sz" data-label="BTC数量">BTC数量</th>
+          <th data-sort="notional" data-i18n-label="th.notional" data-label="价值">价值</th>
+          <th data-sort="pct" data-i18n-label="th.pct" data-label="占账户%">占账户%</th>
+          <th data-sort="created" data-i18n-label="th.created" data-label="创建">创建</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="muted small" id="orders-empty" hidden data-i18n="orders.empty">该根 K 线收盘时没有活跃订单，且区间内没有成交订单。</div>
+    </div>
+  </aside>
+</main>
+</div>
+
+<footer>
+  <details>
+    <summary data-i18n="footer.summary">关于数据 / 指标说明</summary>
+    <ul>
+      <!-- site:footer -->
+      <li data-i18n-html="footer.bm_value"></li>
+      <li data-i18n-html="footer.bm_leverage"></li>
+      <li data-i18n-html="footer.bm_pnl"></li>
+      <li data-i18n-html="footer.pnl_start"></li>
+      <li data-i18n-html="footer.bm_restart_background"></li>
+      <li data-i18n-html="footer.bm_order_pct"></li>
+      <li data-i18n-html="footer.bm_archive"></li>
+      <li id="footer-boundary-note" data-i18n-html="footer.bm_lifecycle" hidden></li>
+      <li id="footer-assumption-note" data-i18n-html="footer.bm_assumption" hidden></li>
+      <li id="footer-guess-note" data-i18n-html="footer.bm_guesses" hidden></li>
+      <li data-i18n-html="footer.bm_indicators"></li>
+      <li data-i18n-html="footer.ack"></li>
+      <li data-i18n-html="footer.thanks"></li>
+      <!-- /site:footer -->
+    </ul>
+  </details>
+</footer>
+
+<!-- site:scripts -->
+<script src="bitmex-orders.js"></script>
+<script src="order-guesses.js"></script>
+<script src="bitmex-guesses.js"></script>
+<!-- /site:scripts -->
+<script src="site.js"></script>
+<script src="order-lifecycle.js"></script>
+<script src="app.js"></script>
+<script src="experiment-toolbar.js"></script>
+</body>
+</html>
